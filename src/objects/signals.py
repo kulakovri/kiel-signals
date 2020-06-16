@@ -89,6 +89,9 @@ class SignalProfile:
     def isanalytetype(self):
         return self.type == analyte_type_name
 
+    def isunreliable(self):
+        return self.name in catalog.unreliable_sph_profiles
+
 
 def get_signal_files():
     return os.listdir(signals_folder)

@@ -217,10 +217,11 @@ bcr_2 = {
     "Sr": 346.0
 }
 
-unreliable_sph_profiles = [
+unreliable_standard_profiles = [
     "1-005-SPH.csv",
     "1-015-SPH3.csv",
     "2-003-SPH1.csv",
-    "2-047-SPH.csv"
+    "2-047-SPH.csv",
+    "2-053-NIST612-1HZ.csv"
 ]
 
