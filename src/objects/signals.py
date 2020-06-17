@@ -25,6 +25,7 @@ class SignalProfile:
         self._set_backgorund()
         self._set_type(csv_name)
         self._set_mineral_minus_background()
+        self._set_cps_percentages()
 
     def build_csv_profile(self, element_name):
         self.df.plot(y=element_name, kind='line', figsize=(35, 10))
@@ -53,6 +54,13 @@ class SignalProfile:
             self.type = 'SPH'
         else:
             self.type = 'analyte'
+
+    def _set_cps_percentages(self):
+        df_values = self.df_analyte.drop(time_column_name, 1)
+        self.df_analyte_percents = pd.concat([
+            self.df_analyte[time_column_name],
+            df_values.div(df_values.sum(1), 'index') * 100
+        ], 1)
 
     def get_ppm_per_cps(self):
         ppm_per_cps = {}
