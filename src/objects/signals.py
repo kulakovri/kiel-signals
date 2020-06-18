@@ -64,37 +64,31 @@ class SignalProfile:
         self.df_mineral_percentages_minus_background = pd.DataFrame(columns=self.columns)
         for column in self.columns:
             if column != time_column_name:
-                df_initial = self.df[self.df[time_column_name] < initial_signal_time]
-                initial_signal_mean = df_initial[column].mean()
-                self.df_mineral_cps_minus_background[column] = self.df_mineral[column] - initial_signal_mean
+                df_initial_cps = self.df[self.df[time_column_name] < initial_signal_time]
+                initial_cps_mean = df_initial_cps[column].mean()
+                self.df_mineral_cps_minus_background[column] = self.df_mineral[column] - initial_cps_mean
+                df_initial_percent = self.df[self.df[time_column_name] < initial_signal_time]
+                initial_percent_mean = df_initial_percent[column].mean()
+                self.df_mineral_percentages_minus_background[column] = self.df_mineral[column] - initial_percent_mean
 
     def get_ppm_per_cps(self):
-        ppm_per_cps = {}
+        return self._get_ppm_per(self.df_mineral_cps_minus_background)
+
+    def get_ppm_per_percent(self):
+        return self._get_ppm_per(self.df_mineral_percentages_minus_background)
+
+    def _get_ppm_per(self, df_minus_background):
+        ppm_per = {}
         if not self.isnonstandard():
             for column in self.columns:
                 if column != time_column_name:
-                    mean_cps = self.df_mineral_cps_minus_background[column].mean()
+                    mean_cps = df_minus_background[column].mean()
                     try:
                         element_concentration = self._get_element_concentration(column)
-                        ppm_per_cps[column] = element_concentration / mean_cps
+                        ppm_per[column] = element_concentration / mean_cps
                     except:
-                        ppm_per_cps[column] = None
-
-        return ppm_per_cps
-
-    def get_ppm_per_percents(self):
-        ppm_per_percent = {}
-        if not self.isnonstandard():
-            for column in self.columns:
-                if column != time_column_name:
-                    mean_cps = self.df_mineral_cps_minus_background[column].mean()
-                    try:
-                        element_concentration = self._get_element_concentration(column)
-                        ppm_per_percent[column] = element_concentration / mean_cps
-                    except:
-                        ppm_per_percent[column] = None
-
-        return ppm_per_percent
+                        ppm_per[column] = None
+        return ppm_per
 
     def _get_element_concentration(self, column):
         element = re.sub('\d', '', column)
