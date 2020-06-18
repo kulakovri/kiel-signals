@@ -11,9 +11,13 @@ brc_type_name = 'BCR2'
 nist_type_name = 'NIST610'
 analyte_type_name = 'analyte'
 
+
 # mineral - non-background part of the signal profile
+# m/z - mass/divided by charge number of the ion
 # cps - (counts (clicks) per second) signal measurement value
-# standard - analyzed reference material, used for calibration and getting ppm/cps. NIST, BCR2, SPH are standard names
+# percent - is the total percentage of m/z cps out of cps sum
+# standard - analyzed reference material, used for calibration and getting ppm/cps.
+# NIST610, NIST612, BCR2, SPH are names of standard materials
 # analyte - analyzed non-standard
 
 class SignalProfile:
@@ -42,22 +46,22 @@ class SignalProfile:
         else:
             self.type = 'analyte'
 
-    def _set_cps_percentages(self):
-        df_values = self.df.drop(time_column_name, 1)
-        self.df_analyte_percents = pd.concat([
-            self.df[time_column_name],
-            df_values.div(df_values.sum(1), 'index') * 100
-        ], 1)
-
     def _set_background(self):
         element_name = 'Na23'
         df_initial = self.df[self.df[time_column_name] < initial_signal_time]
         initial_signal_mean = df_initial[element_name].mean()
         self.df_mineral = self.df[self.df[element_name] > initial_signal_mean * 3][10:-20]
 
+    def _set_cps_percentages(self):
+        df_values = self.df.drop(time_column_name, 1)
+        self.df_percents = pd.concat([
+            self.df[time_column_name],
+            df_values.div(df_values.sum(1), 'index') * 100
+        ], 1)
+
     def _set_mineral_minus_background(self):
         self.df_mineral_cps_minus_background = pd.DataFrame(columns=self.columns)
-        self.df_mineral_percantages_minus_background = pd.DataFrame(columns=self.columns)
+        self.df_mineral_percentages_minus_background = pd.DataFrame(columns=self.columns)
         for column in self.columns:
             if column != time_column_name:
                 df_initial = self.df[self.df[time_column_name] < initial_signal_time]
