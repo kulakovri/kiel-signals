@@ -26,16 +26,10 @@ class SignalProfile:
             skipfooter=1
         )
         self.columns = self.df.columns
-        self._set_backgorund()
         self._set_type(csv_name)
         self._set_cps_percentages()
+        self._set_background()
         self._set_mineral_minus_background()
-
-    def _set_backgorund(self):
-        element_name = 'Na23'
-        df_initial = self.df[self.df[time_column_name] < initial_signal_time]
-        initial_signal_mean = df_initial[element_name].mean()
-        self.df_mineral = self.df[self.df[element_name] > initial_signal_mean * 3][10:-20]
 
     def _set_type(self, csv_name):
         self.name = csv_name
@@ -49,11 +43,17 @@ class SignalProfile:
             self.type = 'analyte'
 
     def _set_cps_percentages(self):
-        df_values = self.df_mineral.drop(time_column_name, 1)
+        df_values = self.df.drop(time_column_name, 1)
         self.df_analyte_percents = pd.concat([
-            self.df_mineral[time_column_name],
+            self.df[time_column_name],
             df_values.div(df_values.sum(1), 'index') * 100
         ], 1)
+
+    def _set_background(self):
+        element_name = 'Na23'
+        df_initial = self.df[self.df[time_column_name] < initial_signal_time]
+        initial_signal_mean = df_initial[element_name].mean()
+        self.df_mineral = self.df[self.df[element_name] > initial_signal_mean * 3][10:-20]
 
     def _set_mineral_minus_background(self):
         self.df_mineral_cps_minus_background = pd.DataFrame(columns=self.columns)
