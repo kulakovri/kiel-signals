@@ -79,7 +79,7 @@ class SignalProfile:
 
     def _get_ppm_per(self, df_minus_background):
         ppm_per = {}
-        if not self.isnonstandard():
+        if not self.is_non_standard():
             for column in self.columns:
                 if column != time_column_name:
                     mean_cps = df_minus_background[column].mean()
@@ -92,26 +92,26 @@ class SignalProfile:
 
     def _get_element_concentration(self, column):
         element = re.sub('\d', '', column)
-        if self.issphtype():
+        if self.is_sph_type():
             return catalog.sph[element]
-        elif self.isbcr2type():
+        elif self.is_bcr2_type():
             return catalog.bcr_2[element]
-        elif self.isnist610type():
+        elif self.is_nist610_type():
             return catalog.nist_610[element]
 
-    def issphtype(self):
+    def is_sph_type(self):
         return self.type == sph_type_name
 
-    def isbcr2type(self):
+    def is_bcr2_type(self):
         return self.type == brc_type_name
 
-    def isnist610type(self):
+    def is_nist610_type(self):
         return self.type == nist_type_name
 
-    def isnonstandard(self):
+    def is_non_standard(self):
         return self.type == analyte_type_name
 
-    def isunreliable(self):
+    def is_unreliable_standard(self):
         return self.name in catalog.unreliable_standard_profiles
 
     def build_csv_profile(self, element_name):
