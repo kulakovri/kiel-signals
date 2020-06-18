@@ -11,6 +11,10 @@ brc_type_name = 'BCR2'
 nist_type_name = 'NIST610'
 analyte_type_name = 'analyte'
 
+# mineral - non-background part of the signal profile
+# cps - (counts (clicks) per second) signal measurement value
+# standard - analyzed reference material, used for calibration and getting ppm/cps. NIST, BCR2, SPH are standard names
+# analyte - analyzed non-standard
 
 class SignalProfile:
 
@@ -31,7 +35,7 @@ class SignalProfile:
         element_name = 'Na23'
         df_initial = self.df[self.df[time_column_name] < initial_signal_time]
         initial_signal_mean = df_initial[element_name].mean()
-        self.df_analyte = self.df[self.df[element_name] > initial_signal_mean * 3][10:-20]
+        self.df_mineral = self.df[self.df[element_name] > initial_signal_mean * 3][10:-20]
 
     def _set_type(self, csv_name):
         self.name = csv_name
@@ -45,9 +49,9 @@ class SignalProfile:
             self.type = 'analyte'
 
     def _set_cps_percentages(self):
-        df_values = self.df_analyte.drop(time_column_name, 1)
+        df_values = self.df_mineral.drop(time_column_name, 1)
         self.df_analyte_percents = pd.concat([
-            self.df_analyte[time_column_name],
+            self.df_mineral[time_column_name],
             df_values.div(df_values.sum(1), 'index') * 100
         ], 1)
 
@@ -58,7 +62,7 @@ class SignalProfile:
             if column != time_column_name:
                 df_initial = self.df[self.df[time_column_name] < initial_signal_time]
                 initial_signal_mean = df_initial[column].mean()
-                self.df_mineral_cps_minus_background[column] = self.df_analyte[column] - initial_signal_mean
+                self.df_mineral_cps_minus_background[column] = self.df_mineral[column] - initial_signal_mean
 
     def get_ppm_per_cps(self):
         ppm_per_cps = {}
@@ -110,7 +114,7 @@ class SignalProfile:
         return self.type == analyte_type_name
 
     def isunreliable(self):
-        return self.name in catalog.unreliable_sph_profiles
+        return self.name in catalog.unreliable_standard_profiles
 
     def build_csv_profile(self, element_name):
         self.df.plot(y=element_name, kind='line', figsize=(35, 10))
