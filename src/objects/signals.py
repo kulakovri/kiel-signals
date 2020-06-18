@@ -3,6 +3,14 @@ from src import catalog
 import os
 import re
 
+# mineral - non-background part of the signal profile
+# m/z - mass/divided by charge number of the ion
+# cps - (counts (clicks) per second) signal measurement value
+# percent - is the total percentage of m/z cps out of cps sum
+# standard - analyzed reference material, used for calibration and getting ppm/cps.
+# NIST610, NIST612, BCR2, SPH are names of standard materials
+# analyte - analyzed non-standard
+
 time_column_name = 'Time [Sec]'
 initial_signal_time = 10
 signals_folder = 'signals/'
@@ -12,13 +20,11 @@ nist_type_name = 'NIST610'
 analyte_type_name = 'analyte'
 
 
-# mineral - non-background part of the signal profile
-# m/z - mass/divided by charge number of the ion
-# cps - (counts (clicks) per second) signal measurement value
-# percent - is the total percentage of m/z cps out of cps sum
-# standard - analyzed reference material, used for calibration and getting ppm/cps.
-# NIST610, NIST612, BCR2, SPH are names of standard materials
-# analyte - analyzed non-standard
+class SignalProfileCalculator:
+
+    def __init__(self):
+        self.signal_profiles = _get_signal_profiles()
+
 
 class SignalProfile:
 
@@ -123,3 +129,11 @@ class SignalProfile:
 
 def get_signal_files():
     return os.listdir(signals_folder)
+
+
+def _get_signal_profiles():
+    signal_profiles = []
+    file_list = get_signal_files()
+    for file_name in file_list:
+        signal_profiles.append(SignalProfile(file_name))
+    return signal_profiles
