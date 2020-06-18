@@ -82,10 +82,10 @@ class SignalProfile:
         if not self.is_non_standard():
             for column in self.columns:
                 if column != time_column_name:
-                    mean_cps = df_minus_background[column].mean()
+                    mean_signal = df_minus_background[column].mean()
                     try:
                         element_concentration = self._get_element_concentration(column)
-                        ppm_per[column] = element_concentration / mean_cps
+                        ppm_per[column] = element_concentration / mean_signal
                     except:
                         ppm_per[column] = None
         return ppm_per
@@ -116,6 +116,9 @@ class SignalProfile:
 
     def build_csv_profile(self, element_name):
         self.df.plot(y=element_name, kind='line', figsize=(35, 10))
+
+    def build_percentage_profile(self, element_name):
+        self.df_percents.plot(y=element_name, kind='line', figsize=(35, 10))
 
 
 def get_signal_files():
