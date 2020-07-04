@@ -20,12 +20,6 @@ nist_type_name = 'NIST610'
 analyte_type_name = 'analyte'
 
 
-class SignalProfileCalculator:
-
-    def __init__(self):
-        self.signal_profiles = _get_signal_profiles()
-
-
 class SignalProfile:
 
     def __init__(self, csv_name):
@@ -125,6 +119,25 @@ class SignalProfile:
 
     def build_percentage_profile(self, element_name):
         self.df_percents.plot(y=element_name, kind='line', figsize=(35, 10))
+
+    def calculate_with_standards(self, reference_profiles):
+        means = get_standard_ppm_percents_means(reference_profiles)
+        df_ppm_values = pd.DataFrame()
+        for column in self.columns:
+            if column != time_column_name:
+                df_ppm_values[column] = self.df_mineral_percentages_minus_background[column] * means[column]
+        return df_ppm_values
+
+
+def get_standard_ppm_percents_means(reference_profiles):
+    dicts_ppm_percent_ratios = {}
+    for profile in reference_profiles:
+        print(f'Using {profile.name} as a reference')
+        dicts_ppm_percent_ratios[profile.name] = profile.get_ppm_per_percent()
+    means = pd.DataFrame(dicts_ppm_percent_ratios)
+    means = means.reindex(sorted(means.columns), axis=1).T
+    means = means.mean()
+    return means.to_dict()
 
 
 def get_signal_files():
