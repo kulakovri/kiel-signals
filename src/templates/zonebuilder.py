@@ -1,6 +1,12 @@
 from src.objects import profiles
 
 
+def compare_profile_with_bse():
+    prf = profiles.CompositionalProfile('18-5h-x2-2-41.csv')
+    prf.add_bse_profile('18-5h-x2-2-41(1).csv')
+    prf.add_bse_profile('18-5h-x2-2-41(2).csv')
+    prf.build_anorthite_profile_with_bse()
+
 def fetch_zoned_plagioclase(csv_name):
     if csv_name == '18-5h-x2-2-41.csv':
         prf = profiles.CompositionalProfile(csv_name)

@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+dist_from_rim = 'Dist from rim'
 
 class CompositionalProfile:
 
@@ -8,15 +9,16 @@ class CompositionalProfile:
         plt.rcParams.update({'font.size': 26})
         self.df = pd.read_csv(f'profiles/{csv_name}')
         self.zones = []
+        self.bse_profiles = []
         self.name = csv_name
 
     def build_anorthite_profile(self):
         self.build_profile('An', 0, 900)
 
     def build_profile(self, element_name, min_range, max_range):
-        df_to_build = self.df[self.df['Dist from rim'] > min_range]
-        df_to_build = df_to_build[df_to_build['Dist from rim'] < max_range]
-        df_to_build.plot(x='Dist from rim', y=element_name, kind='line', figsize=(35, 10))
+        df_to_build = self.df[self.df[dist_from_rim] > min_range]
+        df_to_build = df_to_build[df_to_build[dist_from_rim] < max_range]
+        df_to_build.plot(x=dist_from_rim, y=element_name, kind='line', figsize=(35, 10))
 
     def add_zone(self, name, minrange, maxrange):
         new_zone = Zone(name=name, minrange=minrange, maxrange=maxrange, df=self.df)
@@ -47,7 +49,7 @@ class CompositionalProfile:
             compositions.append(zone.fetch_element_compositions(element_name))
             zone_names.append(zone.name)
         compositions_df = pd.concat(compositions, sort=False)
-        ax = compositions_df.plot(x='Dist from rim', y=zone_names, kind='line', figsize=(35, 10))
+        ax = compositions_df.plot(x=dist_from_rim, y=zone_names, kind='line', figsize=(35, 10))
         ax.set_ylabel(element_name)
 
     def build_zoned_ratios(self, element_x, elements_y):
@@ -88,30 +90,50 @@ class CompositionalProfile:
         self.build_zoned_ratios('An', ('Ba138', 'Ga71', 'Y89', 'Sr88', 'Ce140', 'K39'))
         self.build_zoned_ratios('An', ('Cu65', 'Si29', 'P31', 'Al27'))
 
+    def add_bse_profile(self, csv_name):
+        df_bse = pd.read_csv(f'bse-profiles/{csv_name}')
+        df_bse.rename(columns={'An, mol.%': 'An'}, inplace=True)
+        df_bse[dist_from_rim] = df_bse['Distance core to rim, mkm'].values[::-1]
+        print(df_bse)
+        self.bse_profiles.append(df_bse)
+
+    def build_anorthite_profile_with_bse(self):
+        fig = plt.figure(figsize=(20, 10))
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(self.df[dist_from_rim], self.df['An'], label='LA-ICP-MS')
+        index = 0
+        for bse_profile in self.bse_profiles:
+            ax1.scatter(bse_profile[dist_from_rim], bse_profile['An'], label=f'BSE{index}')
+            index = index + 1
+        plt.xlabel(dist_from_rim)
+        plt.ylabel('An')
+        plt.legend()
+        plt.show()
+
 
 class Zone:
     def __init__(self, name, minrange, maxrange, df):
         self.df = df
         self.name = name
-        zone_df = df[df['Dist from rim'] > minrange]
-        self.zone_df = zone_df[zone_df['Dist from rim'] < maxrange]
+        zone_df = df[df[dist_from_rim] > minrange]
+        self.zone_df = zone_df[zone_df[dist_from_rim] < maxrange]
 
     def fetch_means(self):
         means = pd.DataFrame(columns=[self.name])
         for column in self.zone_df.columns:
-            if column == 'Dist from rim' or column == 'An' or column == 'Line Number' or 'O' in column:
+            if column == dist_from_rim or column == 'An' or column == 'Line Number' or 'O' in column:
                 continue
             else:
                 means.loc[column] = [self.zone_df[column].mean()]
         return means
 
     def fetch_element_compositions(self, element_name):
-        compositions = self.zone_df[['Dist from rim', element_name]]
-        compositions.columns = ['Dist from rim', self.name]
+        compositions = self.zone_df[[dist_from_rim, element_name]]
+        compositions.columns = [dist_from_rim, self.name]
         return compositions
 
     def fetch_element_compositions_ratio(self, element_x, element_y):
-        compositions = self.zone_df[['Dist from rim', element_x, element_y]]
+        compositions = self.zone_df[[dist_from_rim, element_x, element_y]]
         return compositions
 
 

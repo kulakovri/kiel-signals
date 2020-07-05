@@ -18,11 +18,30 @@ sph_type_name = 'SPH'
 brc_type_name = 'BCR2'
 nist_type_name = 'NIST610'
 analyte_type_name = 'analyte'
+grain_names = catalog.grains
+profile_lenghts = catalog.profile_lenghts
+
+
+class Grain:
+
+    def __init__(self, grain_name):
+        self.grain_name = grain_name
+        self.signal_profiles = []
+        self.standard_profiles = []
+
+    def set_signal_profiles(self, profile_names):
+        for profile_name in profile_names:
+            self.signal_profiles.append(SignalProfile(profile_name))
+
+    def set_standard_profiles(self, profile_names):
+        for profile_name in profile_names:
+            self.standard_profiles.append(SignalProfile(profile_name))
 
 
 class SignalProfile:
 
     def __init__(self, csv_name):
+        print(f'loading signal profile from {csv_name}')
         self.df = pd.read_csv(
             f'{signals_folder}{csv_name}',
             skiprows=3,
@@ -34,17 +53,24 @@ class SignalProfile:
         self._set_cps_percentages()
         self._set_background()
         self._set_mineral_minus_background()
+        if self.is_analyte_type():
+            self._set_direction()
+            self._set_position()
+            self._set_profile_length()
+            self._set_overlap()
+            self._set_profile_closest_distance()
+            self._set_distance_from_rim()
 
     def _set_type(self, csv_name):
         self.name = csv_name
         if 'NIST' in csv_name or '610' in csv_name:
-            self.type = 'NIST610'
+            self.type = nist_type_name
         elif 'BCR' in csv_name:
-            self.type = 'BCR2'
+            self.type = brc_type_name
         elif 'SPH' in csv_name:
-            self.type = 'SPH'
+            self.type = sph_type_name
         else:
-            self.type = 'analyte'
+            self.type = analyte_type_name
 
     def _set_background(self):
         element_name = 'Na23'
@@ -71,6 +97,62 @@ class SignalProfile:
                 initial_percent_mean = df_initial_percent[column].mean()
                 self.df_mineral_percentages_minus_background[column] = self.df_mineral[column] - initial_percent_mean
 
+    def _set_position(self):
+        self.is_continuation = False
+        if "a.csv" in self.name:
+            self.is_continuation = True
+
+    def _set_direction(self):
+        self.is_from_rim_to_core = False
+        for rim_to_core_line in catalog.rim_to_core_lines:
+            if f'{rim_to_core_line}.csv' in self.name or f'{rim_to_core_line}a.csv' in self.name:
+                self.is_from_rim_to_core = True
+                break
+
+    def _set_profile_length(self):
+        self.profile_length = profile_lenghts.get(self.name)
+
+    def _set_overlap_length(self):
+        self.overlap_length = 0
+        csv_key = self.name
+        if not self.is_continuation:
+            csv_key = (self.name.split("-"))[-1].split(".csv")[0]
+        for key, value in catalog.profile_overlaps.items():
+            if csv_key in key:
+                self.overlap_length = value
+                break
+
+    def _set_profile_closest_distance(self):
+        if self.is_from_rim_to_core:
+            if self.is_continuation:
+                line_number = (self.name.split("-"))[-1].split("a.csv")[0]
+                for key, value in profile_lenghts.items():
+                    if line_number in key and key != self.name:
+                        self.closest_distance = value - self.overlap_length
+            else:
+                self.closest_distance = 0
+        else:
+            if self.is_continuation:
+                self.closest_distance = 0
+            else:
+                line_number = (self.name.split("-"))[-1].split(".csv")[0]
+                for key, value in profile_lenghts.items():
+                    if line_number in key and key != self.name:
+                        self.closest_distance = value - self.overlap_length
+
+    def _set_distance_from_rim(self):
+        time_series = self.df_mineral[time_column_name]
+        mineral_time = time_series.iloc[-1] - time_series.iloc[0]
+        ratio = self.profile_length / mineral_time
+        time_series = time_series - time_series.iloc[0]
+        distance_from_rim = self.closest_distance + time_series * ratio
+        if not self.is_from_rim_to_core:
+            distance_from_rim = distance_from_rim.values[::-1]
+        self.df_mineral['Dist from rim'] = distance_from_rim
+        self.df_mineral_percentages_minus_background['Dist from rim'] = distance_from_rim
+        self.df_mineral_cps_minus_background['Dist from rim'] = distance_from_rim
+        print(self.df_mineral_percentages_minus_background['Dist from rim'])
+
     def get_ppm_per_cps(self):
         return self._get_ppm_per(self.df_mineral_cps_minus_background)
 
@@ -79,7 +161,7 @@ class SignalProfile:
 
     def _get_ppm_per(self, df_minus_background):
         ppm_per = {}
-        if not self.is_non_standard():
+        if not self.is_analyte_type():
             for column in self.columns:
                 if column != time_column_name:
                     mean_signal = df_minus_background[column].mean()
@@ -108,7 +190,7 @@ class SignalProfile:
     def is_nist610_type(self):
         return self.type == nist_type_name
 
-    def is_non_standard(self):
+    def is_analyte_type(self):
         return self.type == analyte_type_name
 
     def is_unreliable_standard(self):
@@ -132,7 +214,6 @@ class SignalProfile:
 def get_standard_ppm_percents_means(reference_profiles):
     dicts_ppm_percent_ratios = {}
     for profile in reference_profiles:
-        print(f'Using {profile.name} as a reference')
         dicts_ppm_percent_ratios[profile.name] = profile.get_ppm_per_percent()
     means = pd.DataFrame(dicts_ppm_percent_ratios)
     means = means.reindex(sorted(means.columns), axis=1).T

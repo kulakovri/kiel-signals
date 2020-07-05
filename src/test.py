@@ -1,9 +1,10 @@
 import unittest
+from src.templates import signalstemp
 
 
 class MyTestCase(unittest.TestCase):
-    def test_something(self):
-        self.assertEqual(True, True)
+    def build_grain(self):
+        signalstemp.build_grain()
 
 
 if __name__ == '__main__':
