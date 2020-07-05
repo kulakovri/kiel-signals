@@ -11,6 +11,7 @@ import re
 # NIST610, NIST612, BCR2, SPH are names of standard materials
 # analyte - analyzed non-standard
 
+dist_from_rim = 'Dist from rim'
 time_column_name = 'Time [Sec]'
 initial_signal_time = 10
 signals_folder = 'signals/'
@@ -37,11 +38,18 @@ class Grain:
         for profile_name in profile_names:
             self.standard_profiles.append(SignalProfile(profile_name))
 
+    def merge(self):
+        signal_profile_dataframes = []
+        for signal_profile in self.signal_profiles:
+            signal_profile_dataframes.append(signal_profile.df_mineral_percentages_minus_background)
+        merged_df = pd.concat(signal_profile_dataframes, ignore_index=True, sort=False)
+        print(merged_df)
+        merged_df.plot(x=dist_from_rim, y='Ca44', kind='line', figsize=(35, 10))
+
 
 class SignalProfile:
 
     def __init__(self, csv_name):
-        print(f'loading signal profile from {csv_name}')
         self.df = pd.read_csv(
             f'{signals_folder}{csv_name}',
             skiprows=3,
@@ -57,7 +65,7 @@ class SignalProfile:
             self._set_direction()
             self._set_position()
             self._set_profile_length()
-            self._set_overlap()
+            self._set_overlap_length()
             self._set_profile_closest_distance()
             self._set_distance_from_rim()
 
@@ -151,7 +159,6 @@ class SignalProfile:
         self.df_mineral['Dist from rim'] = distance_from_rim
         self.df_mineral_percentages_minus_background['Dist from rim'] = distance_from_rim
         self.df_mineral_cps_minus_background['Dist from rim'] = distance_from_rim
-        print(self.df_mineral_percentages_minus_background['Dist from rim'])
 
     def get_ppm_per_cps(self):
         return self._get_ppm_per(self.df_mineral_cps_minus_background)
