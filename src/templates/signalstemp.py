@@ -9,10 +9,12 @@ file_list = signals.get_signal_files()
 def build_grain():
     grn = signals.Grain('18-5h-x2-2-41')
     grn.set_signal_profiles(
-        ['2-035-VK18-5h-x2-2-41L34.csv', '2-036-VK18-5h-x2-2-41L34a.csv', '2-037-VK18-5h-x2-2-41L35.csv',
+        ['2-035-VK18-5h-x2-2-41L34.csv',
+         '2-036-VK18-5h-x2-2-41L34a.csv',
+         '2-037-VK18-5h-x2-2-41L35.csv',
          '2-038-VK18-5h-x2-2-41L35a.csv'])
     grn.set_standard_profiles(['2-034-SPH.csv', '2-047-SPH.csv'])
-    grn.merge()
+    grn.calculate_ppm()
 
 
 def get_standard_ppm_cps():

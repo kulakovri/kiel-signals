@@ -168,6 +168,8 @@ sph = {
     "Sr": 1024.0
 }
 
+# https://www-s.nist.gov/srmors/certificates/610.pdf
+
 nist_610 = {
     "Mn": 444.0,
     "Ce": 453,
@@ -188,11 +190,13 @@ nist_610 = {
     "Mg": 432.0,
     "Sm": 453,
     "Ca": 82200.0,
-    "Sr": 515.5
+    "Sr": 515.5,
+    "Pb": 426
 }
 
 # Rocholl, Alexander. "Major and trace element composition and homogeneity of microbeam reference material:
 # Basalt glass USGS BCR‐2G." Geostandards newsletter 22.1 (1998): 33-45.
+# http://minerva.union.edu/hollochk/icp-ms/srm/usgs-bcr2.pdf
 
 bcr_2 = {
     "Mn": 15200.0,
@@ -214,7 +218,8 @@ bcr_2 = {
     "Mg": 21600.0,
     "Sm": 6.7,
     "Ca": 50900,
-    "Sr": 346.0
+    "Sr": 346.0,
+    "Pb": 11
 }
 
 unreliable_standard_profiles = [
@@ -223,4 +228,8 @@ unreliable_standard_profiles = [
     "2-003-SPH1.csv",
     "2-047-SPH.csv",
     "2-053-NIST612-1HZ.csv"
+]
+
+main_oxides = [
+    "SiO2", "Al2O3", "FeO", "CaO", "Na2O", "K2O", "MgO", "SrO", "P2O5", "MnO", "TiO2", "An"
 ]

@@ -21,11 +21,47 @@ nist_type_name = 'NIST610'
 analyte_type_name = 'analyte'
 grain_names = catalog.grains
 profile_lenghts = catalog.profile_lenghts
+oxygen_molar_weight = 15.9994
+
+
+class Oxide:
+
+    def __init__(self, name):
+        self.formula_parts = name.split('O')
+        self._set_oxygen_amount()
+        self._set_cation()
+        self._set_cation_amount()
+        self._set_cation_molar_weight()
+
+    def _set_oxygen_amount(self):
+        if len(self.formula_parts) == 1:
+            self.oxygen_amount = 1
+        else:
+            self.oxygen_amount = int(re.sub('\D', '', self.formula_parts[1]))
+
+    def _set_cation(self):
+        self.cation = re.sub(r'[0-9]+', '', self.formula_parts[0])
+
+    def _set_cation_amount(self):
+        amount_string = re.sub('\D', '', self.formula_parts[1])
+        if amount_string == '':
+            self.cation_amount = 0
+        else:
+            self.cation_amount = int(amount_string)
+
+    def _set_cation_molar_weight(self):
+        self.cation_molar_weight = catalog.molar_weights.get(self.cation)
+
+    def _set_ppm_weight_ratio(self):
+        oxygen_weight = oxygen_molar_weight * self.oxygen_amount
+        formula_weight = self.cation_molar_weight * self.cation_amount + oxygen_weight
+        self.ppm_weight_ratio = (formula_weight - oxygen_weight) * 10000 / formula_weight
 
 
 class Grain:
 
     def __init__(self, grain_name):
+        self.merged_df = pd.DataFrame()
         self.grain_name = grain_name
         self.signal_profiles = []
         self.standard_profiles = []
@@ -33,18 +69,24 @@ class Grain:
     def set_signal_profiles(self, profile_names):
         for profile_name in profile_names:
             self.signal_profiles.append(SignalProfile(profile_name))
+        self._merge()
 
     def set_standard_profiles(self, profile_names):
         for profile_name in profile_names:
-            self.standard_profiles.append(SignalProfile(profile_name))
+            sig = SignalProfile(profile_name)
+            self.standard_profiles.append(sig)
 
-    def merge(self):
+    def _merge(self):
         signal_profile_dataframes = []
         for signal_profile in self.signal_profiles:
             signal_profile_dataframes.append(signal_profile.df_mineral_percentages_minus_background)
-        merged_df = pd.concat(signal_profile_dataframes, ignore_index=True, sort=False)
-        print(merged_df)
-        merged_df.plot(x=dist_from_rim, y='Ca44', kind='line', figsize=(35, 10))
+        self.merged_df = pd.concat(signal_profile_dataframes, ignore_index=True, sort=False)
+
+    def calculate_ppm(self):
+        reference_means = get_standard_ppm_percents_means(self.standard_profiles)
+        for key, value in reference_means.items():
+            self.merged_df[key] = self.merged_df[key] * value
+        print(self.merged_df)
 
 
 class SignalProfile:
