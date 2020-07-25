@@ -14,7 +14,7 @@ def build_grain():
          '2-037-VK18-5h-x2-2-41L35.csv',
          '2-038-VK18-5h-x2-2-41L35a.csv'])
     grn.set_standard_profiles(['2-034-SPH.csv', '2-047-SPH.csv'])
-    grn.calculate_ppm()
+    grn.calculate_weights()
 
 
 def get_standard_ppm_cps():

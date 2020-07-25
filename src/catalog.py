@@ -231,5 +231,19 @@ unreliable_standard_profiles = [
 ]
 
 main_oxides = [
-    "SiO2", "Al2O3", "FeO", "CaO", "Na2O", "K2O", "MgO", "SrO", "P2O5", "MnO", "TiO2", "An"
+    "SiO2", "Al2O3", "FeO", "CaO", "Na2O", "K2O", "MgO", "SrO", "P2O5", "MnO", "TiO2"
 ]
+
+element_oxide_pairs = {
+    "Si29": "SiO2",
+    "Al27": "Al2O3",
+    "Fe57": "FeO",
+    "Ca44": "CaO",
+    "Na23": "Na2O",
+    "K39": "K2O",
+    "Mg24": "MgO",
+    "Sr88": "SrO",
+    "P31": "P2O5",
+    "Mn55": "MnO",
+    "Ti47": "TiO2"
+}

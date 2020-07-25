@@ -2,6 +2,7 @@ import pandas as pd
 from src import catalog
 import os
 import re
+import math
 
 # mineral - non-background part of the signal profile
 # m/z - mass/divided by charge number of the ion
@@ -32,9 +33,10 @@ class Oxide:
         self._set_cation()
         self._set_cation_amount()
         self._set_cation_molar_weight()
+        self._set_ppm_weight_ratio()
 
     def _set_oxygen_amount(self):
-        if len(self.formula_parts) == 1:
+        if self.formula_parts[1] == '':
             self.oxygen_amount = 1
         else:
             self.oxygen_amount = int(re.sub('\D', '', self.formula_parts[1]))
@@ -43,9 +45,9 @@ class Oxide:
         self.cation = re.sub(r'[0-9]+', '', self.formula_parts[0])
 
     def _set_cation_amount(self):
-        amount_string = re.sub('\D', '', self.formula_parts[1])
+        amount_string = re.sub('\D', '', self.formula_parts[0])
         if amount_string == '':
-            self.cation_amount = 0
+            self.cation_amount = 1
         else:
             self.cation_amount = int(amount_string)
 
@@ -82,11 +84,53 @@ class Grain:
             signal_profile_dataframes.append(signal_profile.df_mineral_percentages_minus_background)
         self.merged_df = pd.concat(signal_profile_dataframes, ignore_index=True, sort=False)
 
-    def calculate_ppm(self):
+    def calculate_weights(self):
+        self._calculate_ppm()
+        self._calculate_oxide_weight()
+        self._calculate_anorthite()
+        print(self.merged_df)
+
+    def _calculate_ppm(self):
         reference_means = get_standard_ppm_percents_means(self.standard_profiles)
         for key, value in reference_means.items():
             self.merged_df[key] = self.merged_df[key] * value
-        print(self.merged_df)
+
+    def _calculate_oxide_weight(self):
+        convertible_elements = catalog.element_oxide_pairs.keys()
+        for column in self.merged_df.columns:
+            if column in convertible_elements:
+                ratio = self._get_oxide_ratio(column)
+                self._set_oxide_percent_column(column, ratio)
+        self._normalize_oxides()
+
+    def _get_oxide_ratio(self, element):
+        oxide_name = catalog.element_oxide_pairs.get(element)
+        oxide_ratio = Oxide(oxide_name).ppm_weight_ratio
+        return oxide_ratio
+
+    def _set_oxide_percent_column(self, element, ratio):
+        oxide_name = catalog.element_oxide_pairs.get(element)
+        element_column = self.merged_df[element]
+        self.merged_df[oxide_name] = element_column / ratio
+
+    def _normalize_oxides(self):
+        oxide_names = catalog.element_oxide_pairs.values()
+        df_sums = self._get_oxide_sums()
+        for column in self.merged_df.columns:
+            if column in oxide_names:
+                self.merged_df[column] = round(100 * self.merged_df[column] / df_sums['sum'], 2)
+
+    def _get_oxide_sums(self):
+        oxide_names = catalog.element_oxide_pairs.values()
+        df_sums = pd.DataFrame()
+        df_sums['sum'] = self.merged_df['SiO2'] * 0
+        for column in self.merged_df.columns:
+            if column in oxide_names:
+                df_sums['sum'] = df_sums['sum'] + self.merged_df[column]
+        return df_sums
+
+    def _calculate_anorthite(self):
+        self.merged_df['An'] = round(100 * self.merged_df['CaO'] / (self.merged_df['CaO'] + self.merged_df['Na2O'] + self.merged_df['K2O']), 0)
 
 
 class SignalProfile:
