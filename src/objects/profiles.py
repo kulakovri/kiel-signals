@@ -1,16 +1,22 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+from src.objects import signals
 
 dist_from_rim = 'Dist from rim'
 
+
 class CompositionalProfile:
 
-    def __init__(self, csv_name):
+    def __init__(self, profile):
         plt.rcParams.update({'font.size': 26})
-        self.df = pd.read_csv(f'profiles/{csv_name}')
+        if isinstance(profile, str):
+            self.df = pd.read_csv(f'profiles/{profile}')
+            self.name = profile
+        elif isinstance(profile, signals.Grain):
+            self.df = profile.merged_df
+            self.name = profile.grain_name
         self.zones = []
         self.bse_profiles = []
-        self.name = csv_name
 
     def build_anorthite_profile(self):
         self.build_profile('An', 0, 900)
@@ -94,7 +100,6 @@ class CompositionalProfile:
         df_bse = pd.read_csv(f'bse-profiles/{csv_name}')
         df_bse.rename(columns={'An, mol.%': 'An'}, inplace=True)
         df_bse[dist_from_rim] = df_bse['Distance core to rim, mkm'].values[::-1]
-        print(df_bse)
         self.bse_profiles.append(df_bse)
 
     def build_anorthite_profile_with_bse(self):

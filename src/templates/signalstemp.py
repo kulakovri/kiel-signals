@@ -3,6 +3,7 @@ import pandas as pd
 import re
 from src.catalog import sph
 
+
 file_list = signals.get_signal_files()
 
 

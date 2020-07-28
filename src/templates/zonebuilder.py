@@ -1,4 +1,20 @@
 from src.objects import profiles
+from src.objects import signals
+
+
+def build_grain_and_compare_with_bse(used_standards):
+    grn = signals.Grain('18-5h-x2-2-41')
+    grn.set_signal_profiles(
+        ['2-035-VK18-5h-x2-2-41L34.csv',
+         '2-036-VK18-5h-x2-2-41L34a.csv',
+         '2-037-VK18-5h-x2-2-41L35.csv',
+         '2-038-VK18-5h-x2-2-41L35a.csv'])
+    grn.set_standard_profiles(used_standards)
+    grn.calculate_weights()
+    prf = profiles.CompositionalProfile(grn)
+    prf.add_bse_profile('18-5h-x2-2-41(1).csv')
+    prf.add_bse_profile('18-5h-x2-2-41(2).csv')
+    prf.build_anorthite_profile_with_bse()
 
 
 def compare_profile_with_bse():
@@ -6,6 +22,7 @@ def compare_profile_with_bse():
     prf.add_bse_profile('18-5h-x2-2-41(1).csv')
     prf.add_bse_profile('18-5h-x2-2-41(2).csv')
     prf.build_anorthite_profile_with_bse()
+
 
 def fetch_zoned_plagioclase(csv_name):
     if csv_name == '18-5h-x2-2-41.csv':

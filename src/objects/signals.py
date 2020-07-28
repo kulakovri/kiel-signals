@@ -2,7 +2,6 @@ import pandas as pd
 from src import catalog
 import os
 import re
-import math
 
 # mineral - non-background part of the signal profile
 # m/z - mass/divided by charge number of the ion
@@ -88,10 +87,10 @@ class Grain:
         self._calculate_ppm()
         self._calculate_oxide_weight()
         self._calculate_anorthite()
-        print(self.merged_df)
 
     def _calculate_ppm(self):
         reference_means = get_standard_ppm_percents_means(self.standard_profiles)
+        print(reference_means)
         for key, value in reference_means.items():
             self.merged_df[key] = self.merged_df[key] * value
 
