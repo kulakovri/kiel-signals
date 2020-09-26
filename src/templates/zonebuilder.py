@@ -9,7 +9,19 @@ def build_grain_and_compare_with_bse(used_standards):
          '2-036-VK18-5h-x2-2-41L34a.csv',
          '2-037-VK18-5h-x2-2-41L35.csv',
          '2-038-VK18-5h-x2-2-41L35a.csv'])
-    grn.set_standard_profiles(used_standards)
+    grn.set_external_standard_profiles(used_standards)
+    grn.calculate_weights()
+    prf = profiles.CompositionalProfile(grn)
+    prf.build_profile()
+
+def build_grain_and_compare_with_bse(used_standards):
+    grn = signals.Grain('18-5h-x2-2-41')
+    grn.set_signal_profiles(
+        ['2-035-VK18-5h-x2-2-41L34.csv',
+         '2-036-VK18-5h-x2-2-41L34a.csv',
+         '2-037-VK18-5h-x2-2-41L35.csv',
+         '2-038-VK18-5h-x2-2-41L35a.csv'])
+    grn.set_external_standard_profiles(used_standards)
     grn.calculate_weights()
     prf = profiles.CompositionalProfile(grn)
     prf.add_bse_profile('18-5h-x2-2-41(1).csv')

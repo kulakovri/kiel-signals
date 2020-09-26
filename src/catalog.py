@@ -247,3 +247,29 @@ element_oxide_pairs = {
     "Mn55": "MnO",
     "Ti47": "TiO2"
 }
+
+element_oxide_pairs_without_number = {
+    "Si": "SiO2",
+    "Al": "Al2O3",
+    "Fe": "FeO",
+    "Ca": "CaO",
+    "Na": "Na2O",
+    "K": "K2O",
+    "Mg": "MgO",
+    "Sr": "SrO",
+    "P": "P2O5",
+    "Mn": "MnO",
+    "Ti": "TiO2"
+}
+
+сation_constants = {
+    "Si": 60.0848,
+    "Ti": 79.8658,
+    "Al": 50.9806,
+    "Fe": 71.8444,
+    "Mg": 40.3044,
+    "Ca": 56.0774,
+    "Na": 30.9897,
+    "K": 47.0977,
+    "Sr": 103.62
+}

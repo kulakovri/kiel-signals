@@ -2,6 +2,7 @@ import pandas as pd
 from src import catalog
 import os
 import re
+import matplotlib.pyplot as plt
 
 # mineral - non-background part of the signal profile
 # m/z - mass/divided by charge number of the ion
@@ -65,34 +66,48 @@ class Grain:
         self.merged_df = pd.DataFrame()
         self.grain_name = grain_name
         self.signal_profiles = []
-        self.standard_profiles = []
+        self.external_standard_profiles = []
 
     def set_signal_profiles(self, profile_names):
         for profile_name in profile_names:
             self.signal_profiles.append(SignalProfile(profile_name))
         self._merge()
 
-    def set_standard_profiles(self, profile_names):
+    def set_external_standard_profiles(self, profile_names):
         for profile_name in profile_names:
             sig = SignalProfile(profile_name)
-            self.standard_profiles.append(sig)
+            self.external_standard_profiles.append(sig)
+
+    def save_csv(self):
+        print(self.merged_df)
+        self.merged_df.to_csv(f'./out-profiles/{self.grain_name}.csv')
+
+    def save_percents_csv(self):
+        df_with_percents = self.merged_df.filter(regex='O')
+        print(df_with_percents)
+        df_with_percents.to_csv(f'./out-profiles/{self.grain_name}_percents.csv')
+
+    def save_major_elements_csv(self):
+        df_major_elements = self.merged_df[['Ca44', 'Na23', 'K39', 'Al27', 'Si29', 'An']]
+        print(df_major_elements)
+        df_major_elements.to_csv(f'./out-profiles/{self.grain_name}_major.csv')
 
     def _merge(self):
         signal_profile_dataframes = []
         for signal_profile in self.signal_profiles:
-            signal_profile_dataframes.append(signal_profile.df_mineral_percentages_minus_background)
+            signal_profile_dataframes.append(signal_profile.df_mineral_cps_minus_background)
         self.merged_df = pd.concat(signal_profile_dataframes, ignore_index=True, sort=False)
 
     def calculate_weights(self):
         self._calculate_ppm()
         self._calculate_oxide_weight()
+        self._calculate_cations()
         self._calculate_anorthite()
 
     def _calculate_ppm(self):
-        reference_means = get_standard_ppm_percents_means(self.standard_profiles)
-        print(reference_means)
+        reference_means = get_standard_ppm_percents_means(self.external_standard_profiles)
         for key, value in reference_means.items():
-            self.merged_df[key] = self.merged_df[key] * value
+            self.merged_df[key] = round(self.merged_df[key] * value, 2)
 
     def _calculate_oxide_weight(self):
         convertible_elements = catalog.element_oxide_pairs.keys()
@@ -128,8 +143,23 @@ class Grain:
                 df_sums['sum'] = df_sums['sum'] + self.merged_df[column]
         return df_sums
 
+    def _calculate_cations(self):
+        for key, value in catalog.сation_constants.items():
+            oxide = catalog.element_oxide_pairs_without_number.get(key)
+            self.merged_df[key] = self.merged_df[oxide] / value
+        self._normalize_cations()
+
+    def _normalize_cations(self):
+        df_sums = pd.DataFrame()
+        df_sums['sum'] = self.merged_df['SiO2'] * 0
+        for key in catalog.сation_constants.keys():
+            df_sums['sum'] = df_sums['sum'] + self.merged_df[key]
+        for key in catalog.сation_constants.keys():
+            self.merged_df[key] = round(5 * self.merged_df[key] / df_sums['sum'], 3)
+
     def _calculate_anorthite(self):
-        self.merged_df['An'] = round(100 * self.merged_df['CaO'] / (self.merged_df['CaO'] + self.merged_df['Na2O'] + self.merged_df['K2O']), 0)
+        self.merged_df['An'] = round(
+            100 * self.merged_df['Ca'] / (self.merged_df['Ca'] + self.merged_df['Na'] + self.merged_df['K']), 0)
 
 
 class SignalProfile:
@@ -238,7 +268,7 @@ class SignalProfile:
         mineral_time = time_series.iloc[-1] - time_series.iloc[0]
         ratio = self.profile_length / mineral_time
         time_series = time_series - time_series.iloc[0]
-        distance_from_rim = self.closest_distance + time_series * ratio
+        distance_from_rim = round(self.closest_distance + time_series * ratio, 2)
         if not self.is_from_rim_to_core:
             distance_from_rim = distance_from_rim.values[::-1]
         self.df_mineral['Dist from rim'] = distance_from_rim
@@ -250,6 +280,15 @@ class SignalProfile:
 
     def get_ppm_per_percent(self):
         return self._get_ppm_per(self.df_mineral_percentages_minus_background)
+
+    def build_cps_profile(self, element_name):
+        self.df.plot(y=element_name, kind='line', figsize=(35, 10))
+
+    def compare_cps_with_another_profile(self, element_name, another_signal):
+        plt.plot(self.df[time_column_name], self.df[element_name], label=self.name)
+        plt.plot(another_signal.df[time_column_name], another_signal.df[element_name], label=another_signal.name)
+        plt.legend()
+        plt.show()
 
     def _get_ppm_per(self, df_minus_background):
         ppm_per = {}
@@ -299,14 +338,14 @@ class SignalProfile:
         df_ppm_values = pd.DataFrame()
         for column in self.columns:
             if column != time_column_name:
-                df_ppm_values[column] = self.df_mineral_percentages_minus_background[column] * means[column]
+                df_ppm_values[column] = self.df_mineral_cps_minus_background[column] * means[column]
         return df_ppm_values
 
 
 def get_standard_ppm_percents_means(reference_profiles):
     dicts_ppm_percent_ratios = {}
     for profile in reference_profiles:
-        dicts_ppm_percent_ratios[profile.name] = profile.get_ppm_per_percent()
+        dicts_ppm_percent_ratios[profile.name] = profile.get_ppm_per_cps()
     means = pd.DataFrame(dicts_ppm_percent_ratios)
     means = means.reindex(sorted(means.columns), axis=1).T
     means = means.mean()

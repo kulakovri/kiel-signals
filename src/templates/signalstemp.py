@@ -2,9 +2,26 @@ from src.objects import signals
 import pandas as pd
 import re
 from src.catalog import sph
-
+import matplotlib.pyplot as plt
 
 file_list = signals.get_signal_files()
+time_column_name = 'Time [Sec]'
+
+
+def compare_signals(csv_names, element_name):
+    for csv_name in csv_names:
+        sig = signals.SignalProfile(csv_name)
+        plt.plot(sig.df[time_column_name], sig.df[element_name], label=sig.name)
+    plt.legend()
+    plt.title(element_name + ' CPS')
+    plt.show()
+
+
+def build_cps_plots():
+    sig = signals.SignalProfile('2-036-VK18-5h-x2-2-41L34a.csv')
+    sig.build_cps_profile('Al27')
+    sig = signals.SignalProfile('2-034-SPH.csv')
+    sig.build_cps_profile('Al27')
 
 
 def build_grain():
@@ -14,8 +31,10 @@ def build_grain():
          '2-036-VK18-5h-x2-2-41L34a.csv',
          '2-037-VK18-5h-x2-2-41L35.csv',
          '2-038-VK18-5h-x2-2-41L35a.csv'])
-    grn.set_standard_profiles(['2-034-SPH.csv', '2-047-SPH.csv'])
+    grn.set_external_standard_profiles(['2-048-SPH.csv'])
     grn.calculate_weights()
+    grn.save_major_elements_csv()
+    grn.save_csv()
 
 
 def get_standard_ppm_cps():
