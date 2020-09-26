@@ -32,6 +32,7 @@ def build_grain():
          '2-037-VK18-5h-x2-2-41L35.csv',
          '2-038-VK18-5h-x2-2-41L35a.csv'])
     grn.set_external_standard_profiles(['2-048-SPH.csv'])
+    grn.set_internal_standard_profiles(['2-051-NIST.csv', '2-020-NIST610.csv'])
     grn.calculate_weights()
     grn.save_major_elements_csv()
     grn.save_csv()

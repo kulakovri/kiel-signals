@@ -67,6 +67,7 @@ class Grain:
         self.grain_name = grain_name
         self.signal_profiles = []
         self.external_standard_profiles = []
+        self.internal_standard_profiles = []
 
     def set_signal_profiles(self, profile_names):
         for profile_name in profile_names:
@@ -77,6 +78,11 @@ class Grain:
         for profile_name in profile_names:
             sig = SignalProfile(profile_name)
             self.external_standard_profiles.append(sig)
+
+    def set_internal_standard_profiles(self, profile_names):
+        for profile_name in profile_names:
+            sig = SignalProfile(profile_name)
+            self.internal_standard_profiles.append(sig)
 
     def save_csv(self):
         print(self.merged_df)
@@ -105,9 +111,15 @@ class Grain:
         self._calculate_anorthite()
 
     def _calculate_ppm(self):
-        reference_means = get_standard_ppm_percents_means(self.external_standard_profiles)
-        for key, value in reference_means.items():
-            self.merged_df[key] = round(self.merged_df[key] * value, 2)
+        internal_reference_means = get_standard_ppm_percents_means(self.internal_standard_profiles)
+        external_reference_means = get_standard_ppm_percents_means(self.external_standard_profiles)
+        internal_to_external_corrections = get_internal_to_external_corrections(
+            internal_reference_means,
+            external_reference_means
+        )
+        for key, value in internal_reference_means.items():
+            internal_to_external_correction = internal_to_external_corrections[key]
+            self.merged_df[key] = round(self.merged_df[key] * value * internal_to_external_correction, 2)
 
     def _calculate_oxide_weight(self):
         convertible_elements = catalog.element_oxide_pairs.keys()
@@ -350,6 +362,13 @@ def get_standard_ppm_percents_means(reference_profiles):
     means = means.reindex(sorted(means.columns), axis=1).T
     means = means.mean()
     return means.to_dict()
+
+def get_internal_to_external_corrections(internal_reference_means, external_reference_means):
+    internal_to_external_corrections = {}
+    for key, value in internal_reference_means.items():
+        external_standard_value = external_reference_means[key]
+        internal_to_external_corrections[key] = external_standard_value / value
+    return internal_to_external_corrections
 
 
 def get_signal_files():
