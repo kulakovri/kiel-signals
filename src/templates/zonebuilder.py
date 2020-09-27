@@ -22,6 +22,7 @@ def build_grain_and_compare_with_bse(used_standards):
          '2-037-VK18-5h-x2-2-41L35.csv',
          '2-038-VK18-5h-x2-2-41L35a.csv'])
     grn.set_external_standard_profiles(used_standards)
+    grn.set_internal_standard_profiles(['2-051-NIST.csv', '2-020-NIST610.csv'])
     grn.calculate_weights()
     prf = profiles.CompositionalProfile(grn)
     prf.add_bse_profile('18-5h-x2-2-41(1).csv')

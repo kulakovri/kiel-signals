@@ -113,6 +113,8 @@ class Grain:
     def _calculate_ppm(self):
         internal_reference_means = get_standard_ppm_percents_means(self.internal_standard_profiles)
         external_reference_means = get_standard_ppm_percents_means(self.external_standard_profiles)
+        print(internal_reference_means)
+        print(external_reference_means)
         internal_to_external_corrections = get_internal_to_external_corrections(
             internal_reference_means,
             external_reference_means
@@ -368,6 +370,7 @@ def get_internal_to_external_corrections(internal_reference_means, external_refe
     for key, value in internal_reference_means.items():
         external_standard_value = external_reference_means[key]
         internal_to_external_corrections[key] = external_standard_value / value
+    print(internal_to_external_corrections)
     return internal_to_external_corrections
 
 
