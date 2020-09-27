@@ -3,4 +3,109 @@ Raw grain data: '2-035-VK18-5h-x2-2-41L34.csv', '2-036-VK18-5h-x2-2-41L34a.csv',
 Raw external standard data: '2-048-SPH.csv'
 Raw internal standard data: '2-051-NIST.csv', '2-020-NIST610.csv'
 
-For each data file
+External standard cps/ppm(ext) is calculated using SPH reference data by averaging plateau CPS with excluded average CPS of the background
+Same procedure is used for internal standard cps/ppm(int) calculation
+
+Following reference values for NIST610 and SPH are used:
+
+https://www-s.nist.gov/srmors/certificates/610.pdf
+nist_610 = {
+    "Mn": 444.0,
+    "Ce": 453,
+    "Al": 10300.0,
+    "K": 464.0,
+    "P": 413,
+    "Rb": 425.7,
+    "Cu": 441,
+    "Na": 99400.0,
+    "Ti": 452,
+    "Nd": 430,
+    "Y": 462,
+    "Li": 468,
+    "Ba": 452,
+    "Fe": 458,
+    "Si": 325800.0,
+    "Ga": 433.0,
+    "Mg": 432.0,
+    "Sm": 453,
+    "Ca": 82200.0,
+    "Sr": 515.5,
+    "Pb": 426
+}
+
+From the Method.docx
+sph = {
+    "Mn": 77.0,
+    "Ce": 2.5,
+    "Al": 156129.0,
+    "K": 2324.0,
+    "Co": 0.5,
+    "Cr": 0.1,
+    "Eu": 0.4,
+    "P": 48.7,
+    "Rb": 0.35,
+    "Cu": 3.2,
+    "Pb": 0.3,
+    "Na": 33235.0,
+    "Zn": 1.4,
+    "La": 1.4,
+    "Ti": 295.13,
+    "Nd": 1.1,
+    "V": 1.7,
+    "Y": 0.26,
+    "Ni": 0.0,
+    "Li": 8.2,
+    "Ba": 121.9,
+    "Fe": 2876.0,
+    "Pr": 0.3,
+    "Sc": 0.2,
+    "Dy": 0.1,
+    "Si": 248911.0,
+    "Ga": 14.9,
+    "Mg": 663.0,
+    "Sm": 0.2,
+    "Gd": 0.1,
+    "Ca": 87621.0,
+    "Sr": 1024.0
+}
+
+Average cps/ppm(int) for given NIST610:
+    {'Li7': 0.0012210247439546496, 'Na23': 0.0007756525082541664, 'Mg24': 0.0009899195933112804,
+     'Al27': 0.0008810921094621078, 'Si29': 0.021169600391071124, 'P31': 0.0029078167618820493,
+     'K39': 0.0011164884594736732, 'Ca43': 0.3725765216343089, 'Ca44': 0.023756143138810318,
+     'Ti47': 0.007078487131534819, 'Mn55': 0.00045884527466298576, 'Fe57': 0.019522678474147202,
+     'Cu65': 0.0018826570506536814, 'Ga71': 0.0008675904279749774, 'Sr88': 0.0004089163443217229,
+     'Y89': 0.000344031221255576, 'Ba138': 0.00044645813279568867, 'Ce140': 0.0003448749194162081,
+     'Pb208': 0.0007297292456009453}
+cps/ppm(ext) for SPH:
+    {'Al27': 0.0016163058684604914, 'Ba138': 0.0008432932423165966, 'Ca43': 0.7255436004147124,
+     'Ca44': 0.04620340825672861, 'Ce140': 0.0006694689931597244, 'Cu65': 0.00317506018557104,
+     'Fe57': 0.04293872606574312, 'Ga71': 0.001617142788260269, 'K39': 0.0013797332080805334,
+     'Li7': 0.0019512445305719522, 'Mg24': 0.0020552228153215965, 'Mn55': 0.0017261238906769976,
+     'Na23': 0.0013609974100770457, 'P31': 0.004987214679573304, 'Pb208': 0.0013272396453198805,
+     'Si29': 0.035297114381901765, 'Sr88': 0.0008213028776204555, 'Ti47': 0.010527389909924271,
+     'Y89': 0.0007045628508377588}
+NIST610->SPH correction values:
+    {'Li7': 1.5980384838494508, 'Na23': 1.754648371008778, 'Mg24': 2.076151264414191, 'Al27': 1.834434619380736,
+     'Si29': 1.6673491105098668, 'P31': 1.7151062422328804, 'K39': 1.2357791935717428, 'Ca43': 1.9473680124343629,
+     'Ca44': 1.9449035976402367, 'Ti47': 1.4872372746182603, 'Mn55': 3.761886600978526, 'Fe57': 2.1994280202178453,
+     'Cu65': 1.6864782592605596, 'Ga71': 1.8639472452857786, 'Sr88': 2.0084863053903255, 'Y89': 2.047961950274126,
+     'Ba138': 1.8888517878170459, 'Ce140': 1.941193619683848, 'Pb208': 1.8188110909915285}
+
+To calculate PPM of the the mineral we use following algorithm:
+PPM = (CPS-CPSbkg) * cps/ppm(int) * correction
+
+
+
+We need to merge those 4 calculated profiles into one.
+Ablation line lengths in mkm of profiles:
+   {"2-035-VK18-5h-x2-2-41L34.csv": 340.7,
+    "2-036-VK18-5h-x2-2-41L34a.csv": 325.9,
+    "2-037-VK18-5h-x2-2-41L35.csv": 387.3,
+    "2-038-VK18-5h-x2-2-41L35a.csv": 275.1}
+2-035-VK18-5h-x2-2-41L34.csv and 2-036-VK18-5h-x2-2-41L34a.csv are consecutive from core to rim profiles.
+2-037-VK18-5h-x2-2-41L35.csv and 2-038-VK18-5h-x2-2-41L35a.csv are consecutive from rim to core profiles.
+Knowing how profiles are related to each other, their direction and length we are able to give each measure sequence a coordinate in mkm from rim
+34a - is a continuation and should cover 0 - 325.9 mkm from rim, 34 should cover 325.9 - 666.6 mkm from rim
+35 should cover 0 - 387.3 and continued 35a should cover 387.3 - 662.4
+With given coordinates, profiles could be easily merged
