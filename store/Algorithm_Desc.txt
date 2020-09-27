@@ -1,0 +1,6 @@
+For the grain 18-5h-x2-2-41 I've used:
+Raw grain data: '2-035-VK18-5h-x2-2-41L34.csv', '2-036-VK18-5h-x2-2-41L34a.csv', '2-037-VK18-5h-x2-2-41L35.csv', '2-038-VK18-5h-x2-2-41L35a.csv'
+Raw external standard data: '2-048-SPH.csv'
+Raw internal standard data: '2-051-NIST.csv', '2-020-NIST610.csv'
+
+For each data file

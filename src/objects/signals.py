@@ -111,8 +111,8 @@ class Grain:
         self._calculate_anorthite()
 
     def _calculate_ppm(self):
-        internal_reference_means = get_standard_ppm_percents_means(self.internal_standard_profiles)
-        external_reference_means = get_standard_ppm_percents_means(self.external_standard_profiles)
+        internal_reference_means = get_standard_ppm_cps_means(self.internal_standard_profiles)
+        external_reference_means = get_standard_ppm_cps_means(self.external_standard_profiles)
         print(internal_reference_means)
         print(external_reference_means)
         internal_to_external_corrections = get_internal_to_external_corrections(
@@ -348,7 +348,7 @@ class SignalProfile:
         self.df_percents.plot(y=element_name, kind='line', figsize=(35, 10))
 
     def calculate_with_standards(self, reference_profiles):
-        means = get_standard_ppm_percents_means(reference_profiles)
+        means = get_standard_ppm_cps_means(reference_profiles)
         df_ppm_values = pd.DataFrame()
         for column in self.columns:
             if column != time_column_name:
@@ -356,11 +356,11 @@ class SignalProfile:
         return df_ppm_values
 
 
-def get_standard_ppm_percents_means(reference_profiles):
-    dicts_ppm_percent_ratios = {}
+def get_standard_ppm_cps_means(reference_profiles):
+    dicts_ppm_cps_ratios = {}
     for profile in reference_profiles:
-        dicts_ppm_percent_ratios[profile.name] = profile.get_ppm_per_cps()
-    means = pd.DataFrame(dicts_ppm_percent_ratios)
+        dicts_ppm_cps_ratios[profile.name] = profile.get_ppm_per_cps()
+    means = pd.DataFrame(dicts_ppm_cps_ratios)
     means = means.reindex(sorted(means.columns), axis=1).T
     means = means.mean()
     return means.to_dict()
