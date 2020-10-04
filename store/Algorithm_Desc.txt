@@ -9,6 +9,7 @@ Same procedure is used for internal standard cps/ppm(int) calculation
 Following reference values for NIST610 and SPH are used:
 
 https://www-s.nist.gov/srmors/certificates/610.pdf
+https://d1wqtxts1xzle7.cloudfront.net/50867405/Determination_of_Reference_Values_for_NI20161213-3368-7qgn1x.pdf?1481646836=&response-content-disposition=inline%3B+filename%3DDetermination_of_Reference_Values_for_NI.pdf&Expires=1601380276&Signature=N2m4opELhV0Z8rqZ6HNYaXxrEJ2ymsbQ9v5ZT0E6LEmsBj2skPrTHxRVaGuwUn-ZK7M8ryZnsP8QoJpT~0bPQBbX4BXUC74F-lmHxGAxdabShfQ~NRUznMbuXw9Hbe5B5beXRiQtZEcOPZ-W4NADuG3BrWQ8k26yI9kG9CQJgNbg8GfAsKychrgHsH7q5JyLo7sqlzgkZWysdM8i1INPIojfk3Mj148-2MtfLlIynNRhVYjmDZRGdB6F3vlDxaMbBBr1xh17qgYOfXTP-FTnMNUfoB2u0d7keJooyqUB-NosMzuNO96NQUMT8JhpZSd6U99ttnFvlU9CBZH0~Qx3vA__&Key-Pair-Id=APKAJLOHF5GGSLRBV4ZAv
 nist_610 = {
     "Mn": 444.0,
     "Ce": 453,

@@ -101,6 +101,7 @@ class Grain:
     def _merge(self):
         signal_profile_dataframes = []
         for signal_profile in self.signal_profiles:
+            signal_profile.df_mineral_cps_minus_background['name'] = signal_profile.name
             signal_profile_dataframes.append(signal_profile.df_mineral_cps_minus_background)
         self.merged_df = pd.concat(signal_profile_dataframes, ignore_index=True, sort=False)
 
@@ -185,6 +186,7 @@ class SignalProfile:
             dtype={time_column_name: 'float64'},
             skipfooter=1
         )
+        self.name = csv_name
         self.columns = self.df.columns
         self._set_type(csv_name)
         self._set_cps_percentages()

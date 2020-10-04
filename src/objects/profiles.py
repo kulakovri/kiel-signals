@@ -48,6 +48,15 @@ class CompositionalProfile:
         plt.legend()
         plt.show()
 
+    def build_profiles_divided(self, element_name):
+        plt.figure(figsize=(35, 10))
+        plt.ylabel(element_name)
+        for profile_name in self.df['name'].unique():
+            profile_df = self.df[self.df['name'] == profile_name]
+            plt.plot(profile_df[dist_from_rim], profile_df[element_name], label=profile_name)
+        plt.legend()
+        plt.show()
+
     def build_zoned_profile(self, element_name):
         compositions = []
         zone_names = []

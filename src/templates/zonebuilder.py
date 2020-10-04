@@ -2,28 +2,28 @@ from src.objects import profiles
 from src.objects import signals
 
 
-def build_grain_and_compare_with_bse(used_standards):
+def build_grain():
     grn = signals.Grain('18-5h-x2-2-41')
     grn.set_signal_profiles(
         ['2-035-VK18-5h-x2-2-41L34.csv',
          '2-036-VK18-5h-x2-2-41L34a.csv',
          '2-037-VK18-5h-x2-2-41L35.csv',
          '2-038-VK18-5h-x2-2-41L35a.csv'])
-    grn.set_external_standard_profiles(used_standards)
-    grn.calculate_weights()
-    prf = profiles.CompositionalProfile(grn)
-    prf.build_profile()
-
-def build_grain_and_compare_with_bse(used_standards):
-    grn = signals.Grain('18-5h-x2-2-41')
-    grn.set_signal_profiles(
-        ['2-035-VK18-5h-x2-2-41L34.csv',
-         '2-036-VK18-5h-x2-2-41L34a.csv',
-         '2-037-VK18-5h-x2-2-41L35.csv',
-         '2-038-VK18-5h-x2-2-41L35a.csv'])
-    grn.set_external_standard_profiles(used_standards)
+    grn.set_external_standard_profiles(['2-048-SPH.csv'])
     grn.set_internal_standard_profiles(['2-051-NIST.csv', '2-020-NIST610.csv'])
     grn.calculate_weights()
+    grn.save_csv()
+    return grn
+
+
+def build_profiles_divided(element_name):
+    grn = build_grain()
+    prf = profiles.CompositionalProfile(grn)
+    prf.build_profiles_divided(element_name)
+
+
+def compare_grain_with_bse():
+    grn = build_grain()
     prf = profiles.CompositionalProfile(grn)
     prf.add_bse_profile('18-5h-x2-2-41(1).csv')
     prf.add_bse_profile('18-5h-x2-2-41(2).csv')
